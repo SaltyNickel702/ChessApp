@@ -1,2 +1,6 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+build/** linguist-generated=true
+include/** linguist-vendored=true
+statLib/** linguist-vendored=true
+
+buildFiles.bat linguist-ignored=true
+compile.bat linguist-ignored=true
