@@ -33,10 +33,13 @@ namespace UI {
 
 	class Box : Element { //most basic element, can have a color and bounds
 		public:
+			static Render::Shader* shader;
+
 			Box () = delete;
 			Box (float x1, float y1, float x2, float y2);
+			Box (float x1, float y1, float x2, float y2, glm::vec4 color);
 
-			void setDimensions (int w, int h);
+			void setDimensions (float w, float h);
 
 			glm::vec4 color;
 		private:

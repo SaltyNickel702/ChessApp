@@ -1,6 +1,13 @@
 #include "Render.h"
+#include "UI.h"
 
 using namespace std;
+
+//Important Functions
+void Render::declareShaders() {
+	UI::Box::shader = new Render::Shader("UI_Elements/boxVert.glsl","UI_Elements/boxFrag.glsl");
+}
+
 
 //Under the hood functions
 namespace {
@@ -120,6 +127,10 @@ namespace Render {
 			printf("Failed to load icon image!\n");
 		}
 		//*/
+
+		//Load GLFW assets
+		declareShaders();
+
 		loop();
 	}
 	void loop () {
@@ -132,6 +143,7 @@ namespace Render {
 			//update pending meshes
 			for (Object* o : Object::objects) {
 				if (o->flagReady) o->updateBuffers();
+				if (!o->hidden) o->draw();
 			}
 
 			glfwSwapBuffers(window);

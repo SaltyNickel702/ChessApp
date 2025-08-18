@@ -29,6 +29,7 @@ namespace Render {
 
 			Shader (const std::string vertexPath, const std::string fragmentPath) {
 				using namespace std;
+				#include <iostream>
 
 				string vertexCode;
 				string fragmentCode;
@@ -114,9 +115,9 @@ namespace Render {
 	};
 	class Object { //Contains mesh information
 		public:
-			Object () : ready(false), flagReady(false), hidden(false) {
+			Object () : ready(false), flagReady(false), hidden(false), draw([](){}) {
 				objects.push_back(this);
-			};;
+			};
 			
 			static std::vector<Object*> objects;
 
@@ -138,6 +139,8 @@ namespace Render {
 			void updateBuffers (); //must be called on render thread
 			void cleanBuffers ();
 
+			std::function<void()> draw;
+
 			~Object () {
 				cleanBuffers();
 				
@@ -158,6 +161,8 @@ namespace Render {
 	//Function Defs
 	void init(int w, int h); //initializes glfw and starts loop
 	void loop (); //Starts the render loop
+
+	void declareShaders (); //Only function that should be messed with; used to create shaders bc all glfw stuff is done on the same thread
 }
 
 #endif
