@@ -1,11 +1,14 @@
 #include "Render.h"
 #include "UI.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
 
 using namespace std;
 
 //Important Functions
 void Render::declareShaders() {
 	UI::Box::shader = new Render::Shader("UI_Elements/boxVert.glsl","UI_Elements/boxFrag.glsl");
+	UI::Image::shader = new Render::Shader("UI_Elements/imgVert.glsl","UI_Elements/imgFrag.glsl");
 }
 
 
@@ -22,12 +25,47 @@ namespace {
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
 
 	}
+
+	map<string,unsigned int*> imageQueue;
+	void loadImageQueue () {
+		for (auto& [src, ptr] : imageQueue) {
+			unsigned int texture;
+			glGenTextures(1, &texture);
+			glBindTexture(GL_TEXTURE_2D, texture);
+
+			// Set wrapping and filtering
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+			// Load image
+			string ImgRel = "./assets/textures/" + src;
+			int width, height, nrChannels;
+			unsigned char* data = stbi_load(ImgRel.c_str(), &width, &height, &nrChannels, 0);
+			if (data) {
+				GLenum format = (nrChannels == 4) ? GL_RGBA :
+								(nrChannels == 3) ? GL_RGB :
+								(nrChannels == 1) ? GL_RED : GL_RGB;
+
+				glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+			} else {
+				std::cout << "Failed to load texture: " << src << std::endl;
+			}
+			stbi_image_free(data);
+			glBindTexture(GL_TEXTURE_2D, 0);
+
+			*ptr = texture;
+		}
+		imageQueue.clear();
+	};
 }
 
 //Render.h definitions
 namespace Render {
 	GLFWwindow* window = nullptr;
 	unsigned int width, height;
+	std::map<std::string,unsigned int*> imageCache;
 
 	vector<Object*> Object::objects;
 	void Object::updateBuffers () {
@@ -131,11 +169,17 @@ namespace Render {
 		//Load GLFW assets
 		declareShaders();
 
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		glFrontFace(GL_CW);
+
 		loop();
 	}
 	void loop () {
 		while (!glfwWindowShouldClose(window)) {
 			processInput();
+
+			if (imageQueue.size() > 0) loadImageQueue();
 
 			glClearColor(0.0,0.0,0.0,1.0);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -150,4 +194,11 @@ namespace Render {
 		}
 		glfwTerminate();
 	};
+
+	unsigned int* generateImageCache (string imageSrc) {
+		unsigned int* ptr = new unsigned int(0);
+		imageCache[imageSrc] = ptr; //it shouldn't happen that the image has already been generated;
+		imageQueue[imageSrc] = ptr;
+		return ptr;
+	}
 }

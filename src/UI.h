@@ -11,7 +11,7 @@
 namespace UI {
 	class Element {
 		public:
-			static std::vector<Element*> elements; //int is z level;
+			static std::vector<Element*> elements;
 
 			Element () : zIndex(0) {
 				elements.push_back(this);
@@ -29,9 +29,17 @@ namespace UI {
 			virtual void setPosition (glm::vec2 nPos) {pos = nPos;};
 			virtual void setCenter (glm::vec2 nPos) {pos = nPos - dim*0.5f;};
 			virtual glm::vec2 getCenter () {return pos + dim*0.5f;};
+
+			virtual ~Element () {
+				//clear from elements vector
+				auto pointer = std::find(elements.begin(), elements.end(), this);
+				if (pointer != elements.end()) {
+					elements.erase(pointer);
+				}
+			}
 	};
 
-	class Box : Element { //most basic element, can have a color and bounds
+	class Box : public Element { //most basic element, can have a color and bounds
 		public:
 			static Render::Shader* shader;
 
@@ -46,9 +54,18 @@ namespace UI {
 			Render::Object obj;
 	};
 
-	class Image : Element {
+	class Image : public Element {
 		public:
+			static Render::Shader* shader;
 
+			Image () = delete;
+			Image (float x, float y, float w, float h, unsigned int* imageID);
+
+			void setDimensions (float w, float h);
+
+			unsigned int* imageID;
+		private:
+			Render::Object obj;
 	};
 }
 

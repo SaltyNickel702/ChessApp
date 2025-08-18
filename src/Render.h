@@ -10,6 +10,7 @@
 #include <functional>
 #include <vector>
 #include <algorithm>
+#include <map>
 
 
 #ifndef RENDER_H
@@ -157,12 +158,16 @@ namespace Render {
 	extern GLFWwindow* window;
 	extern unsigned int width, height;
 
+	extern std::map<std::string,unsigned int*> imageCache; //IDs of textures on GPU
+
 
 	//Function Defs
 	void init(int w, int h); //initializes glfw and starts loop
 	void loop (); //Starts the render loop
 
 	void declareShaders (); //Only function that should be messed with; used to create shaders bc all glfw stuff is done on the same thread
+
+	unsigned int* generateImageCache (std::string imageSrc); //puts image into queue to be generated, returns to pointer to element in Render::imageCache; Value pointed to is initially 0 until ID is generated
 }
 
 #endif
