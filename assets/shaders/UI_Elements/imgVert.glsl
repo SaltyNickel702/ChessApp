@@ -10,11 +10,12 @@ out vec2 UV;
 void main ()
 {
 	vec4 screenPxl = translate * vec4(pos,0,1);
+	float zResult = screenPxl.z;
 	vec4 scaleCoords = screenPxl / vec4(screenDim,1,1);
-	vec4 screenSpace = (scaleCoords*2 + vec4(-1,-1,0,0));
+	vec4 screenSpace = (scaleCoords*vec4(2,2,1,1) + vec4(-1,-1,0,0));
 	screenSpace.y = -screenSpace.y;
 
-	gl_Position = vec4(screenSpace.xyz,1);
+	gl_Position = vec4(screenSpace.xy,tanh(zResult * 0.2),1);
 
 	UV = UVin;
 }

@@ -1,5 +1,5 @@
 #include "Render.h"
-#include "UI.h"
+#include "Scene.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
@@ -7,8 +7,8 @@ using namespace std;
 
 //Important Functions
 void Render::declareShaders() {
-	UI::Box::shader = new Render::Shader("UI_Elements/boxVert.glsl","UI_Elements/boxFrag.glsl");
-	UI::Image::shader = new Render::Shader("UI_Elements/imgVert.glsl","UI_Elements/imgFrag.glsl");
+	Scene::UI::Box::shader = new Render::Shader("UI_Elements/boxVert.glsl","UI_Elements/boxFrag.glsl");
+	Scene::UI::Image::shader = new Render::Shader("UI_Elements/imgVert.glsl","UI_Elements/imgFrag.glsl");
 }
 
 
@@ -19,11 +19,6 @@ namespace {
 		glViewport(0, 0, w, h);
 		width = w;
 		height = h;
-	}
-	void processInput () {
-		glfwPollEvents();
-		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
-
 	}
 
 	map<string,unsigned int*> imageQueue;
@@ -58,6 +53,37 @@ namespace {
 			*ptr = texture;
 		}
 		imageQueue.clear();
+	};
+
+
+	atomic<bool> keysDownArr[GLFW_KEY_LAST + 1];
+	atomic<bool> keysPressArr[GLFW_KEY_LAST + 1];
+	atomic<bool> keysUpArr[GLFW_KEY_LAST + 1];
+	void processInput () {
+		glfwPollEvents();
+		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
+
+		bool ticked = scriptTicked.load(); //If scripting ticked in the last frame
+		if (ticked) {
+			//reset things that are only for one tick
+			for (int i = GLFW_KEY_SPACE; i <= GLFW_KEY_LAST; i++) {
+				keysPressArr[i].store(false);
+			}
+		}
+		for (int i = GLFW_KEY_SPACE; i <= GLFW_KEY_LAST; i++) {
+			bool keyDownBefore = keysDownArr[i].load();
+			if (glfwGetKey(Render::window, i) == GLFW_PRESS) {
+				if (!keyDownBefore) {
+					keysPressArr[i].store(true);
+				}
+				keysDownArr[i].store(true);
+			} else { 
+				if (ticked) //Key down events are guaranteed to be present for atleast one tick | If script is running slowly, and a key has been pressed and released between ticks, keysDown should still be true for that tick
+					keysDownArr[i].store(false);
+			}
+		}
+
+		scriptTicked.store(false);
 	};
 }
 
@@ -200,5 +226,13 @@ namespace Render {
 		imageCache[imageSrc] = ptr; //it shouldn't happen that the image has already been generated;
 		imageQueue[imageSrc] = ptr;
 		return ptr;
+	}
+
+	atomic<bool> scriptTicked{false};
+	bool isKeyDown (int GLFW_key) {
+		return keysDownArr[GLFW_key].load();
+	}
+	bool isKeyPressed (int GLFW_key) {
+		return keysPressArr[GLFW_key].load();
 	}
 }
