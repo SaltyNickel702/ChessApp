@@ -22,10 +22,18 @@ int main () {
 
 	Scene::UI::Box b("b", u, 0,0,100,100, glm::vec4(.05,.045,0.3,1));
 
+
+	Scene::UI u3("UI2",s);
+	u3.setUIHiddenState(true);
+	Scene::UI::Box b3("b3",u3, 0,0,200,200, glm::vec4(1));
+	b3.setCenter(glm::vec2(400,300));
+
+	bool u1Used = true;
+
 	Scene::Script scr("Script", s);
 	scr.tick = [&]() {
 		glm::vec2 nPos = i.pos;
-		glm::vec2 dta(0);
+		glm::vec2 dta(0); //delta
 		float speed = 400;
 		if (Render::isKeyDown(GLFW_KEY_A)) dta += glm::vec2(-speed,0);
 		if (Render::isKeyDown(GLFW_KEY_D)) dta += glm::vec2(+speed,0);
@@ -36,7 +44,11 @@ int main () {
 
 		i.setPosition(nPos);
 
-		if (Render::isKeyPressed(GLFW_KEY_Q)) Scene::Script::tickQueue.push_back([&](){Scene::setActiveScene("Blank");});
+		// if (Render::isKeyPressed(GLFW_KEY_Q)) Scene::Script::tickQueue.push_back([&](){Scene::setActiveScene("Blank");});
+		if (Render::isKeyPressed(GLFW_KEY_Q)) {
+			// u.setUIHiddenState(!u.uiHiddenState);
+			u3.setUIHiddenState(!u3.uiHiddenState);
+		}
 		if (Render::isKeyPressed(GLFW_KEY_E)) b.setObjHiddenState(!b.objHiddenState);
 	};
 
@@ -47,7 +59,7 @@ int main () {
 	b2.setCenter(glm::vec2(400,300));
 	Scene::Script scr2("Script", s2);
 	scr2.tick = [&]() {
-		if (Render::isKeyPressed(GLFW_KEY_Q)) Scene::Script::tickQueue.push_back([&](){Scene::setActiveScene("New Scene");});
+		// if (Render::isKeyPressed(GLFW_KEY_Q)) Scene::Script::tickQueue.push_back([&](){Scene::setActiveScene("New Scene");});
 	};
 
 

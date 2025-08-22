@@ -24,14 +24,14 @@ void Scene::setActiveScene (string scene) {
 	Scene* newScene = scenes[scene];
 	for (auto& [uName, ui] : newScene->UIs) {
 		for (auto& [eName, e] : ui->elements) {
-			e->obj.hidden = e->objHiddenState; //preserves previous states
+			e->obj.hidden = e->objHiddenState || e->cUI->uiHiddenState; //preserves previous states
 		}
 	}
 
 	activeScene = newScene;
 }
 
-Scene::Scene (string name) : hasBeenActive(false), tickedActive(false) {
+Scene::Scene (string name) : hasBeenActive(false), tickedActive(false), sceneManager("sceneManager",*this) {
 	scenes[name] = this;
 	if (!activeScene) activeScene = this;
 }
@@ -41,6 +41,13 @@ Scene::Scene (string name) : hasBeenActive(false), tickedActive(false) {
 using UI = Scene::UI;
 UI::UI (string nameIn, Scene &scene) : cScene(&scene), name(nameIn) {
 	cScene->UIs[name] = this;
+}
+
+void UI::setUIHiddenState (bool state) {
+	uiHiddenState = state;
+	for (auto [id,e] : elements) {
+		e->obj.hidden = state || e->objHiddenState;
+	}
 }
 
 void UI::Element::setObjHiddenState (bool state) {

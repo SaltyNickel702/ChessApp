@@ -32,12 +32,16 @@ class Scene {
 				UI (std::string name, Scene &scene);
 				const std::string name;
 
+				bool uiHiddenState = false;
+				void setUIHiddenState (bool state); //Control if the element is visible when scene is active
+
+
 				class Element { //container function that has standard functions
 					public:
 						Element () = delete;
 						Element (std::string nameIn, UI &ui) : cUI(&ui), name(nameIn), zIndex(0) {
 							cUI->elements[name] = this;
-							if (cUI->cScene != Scene::activeScene) obj.hidden = true;
+							if (cUI->cScene != Scene::activeScene || cUI->uiHiddenState) obj.hidden = true; //adhere to hidden states of UI and scene
 						};
 						const std::string name;
 
@@ -61,8 +65,8 @@ class Scene {
 						virtual ~Element () {
 							cUI->elements.erase(name);
 						}
-					protected:
-						UI* cUI; //UI the element is attached to | Container UI
+
+						UI* cUI; //UI the element is attached to | Container UI | Don't edit
 				};
 				std::map<std::string, Element*> elements;
 
@@ -124,6 +128,7 @@ class Scene {
 				Scene* cScene;
 		};
 		std::map<std::string, Script*> scripts;
+		Script sceneManager;
 };
 
 #endif

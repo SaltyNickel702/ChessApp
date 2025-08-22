@@ -38,4 +38,5 @@
 		- Render objects are intended to be used with a container class. The class constructor should generate the draw function for the object, which applies draw settings, shaders, and uniforms
 		- If a render object is not set to hidden, the draw function will automatically be called every frame
 	- The `Render::Shader` class compiles shaders and stores their ID
-	- Images can be buffered using `Render::generateImageCache`. The function takes in the location of the image relative to `/assets/textures` and returns a pointer to the ID of the texture on the GPU. This ID can also be found in `Render::imageCache` using its name as the map key. There is no safety for buffering the same image twice, and will cause a minor memory leak
+		- New shaders need to be generated on the Render thread, and therefore must be defined in a function that is currently on the top of `Render.cpp`
+	- Images can be buffered using `Render::generateImageCache`. The function takes in the location of the image relative to `/assets/textures` and returns a pointer to the ID of the texture on the GPU. This ID can also be found in `Render::imageCache` using the image name as the map key. There is no safety for buffering the same image twice, and will cause a minor memory leak
