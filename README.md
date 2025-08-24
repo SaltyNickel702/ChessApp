@@ -1,7 +1,11 @@
 # **Chess App**
 
 #### Current Features
-- None yet, still working on game engine
+- Chess board with alternating turns
+	- No win condition yet
+- Current Themes
+	- Standard chess.com
+- Still working on more
 
 #### Planned Features
 - Local Multiplayer
@@ -9,7 +13,6 @@
 - Hosting a game on your own PC
 	- Share your IP address with a friends to play online
 - Different themes for the chess board
-	- Standard chess.com style theme
 	- 3d pieces with a high fov to differentiate pieces from above
 	- etc.
 
