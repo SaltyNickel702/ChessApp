@@ -45,9 +45,9 @@ class Scene {
 						};
 						const std::string name;
 
-						std::function<void()> onClick;
-						std::function<void()> onHover;
-						std::function<void()> onLeave;
+						std::function<void(Element* e)> onClick;
+						std::function<void(Element* e)> onHover;
+						std::function<void(Element* e)> onLeave;
 						
 						Render::Object obj;
 						void setObjHiddenState (bool state); //Control if the element is visible when scene is active
@@ -124,6 +124,10 @@ class Scene {
 				std::function<void()> onStart; //runs the first time the scene loads
 				std::function<void()> onSceneLoad; //runs every time the scene is loaded
 				std::function<void()> tick; //runs every tick;
+
+				~Script () {
+					cScene->scripts.erase(name);
+				}
 			protected:
 				Scene* cScene;
 		};

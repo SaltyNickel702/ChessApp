@@ -32,6 +32,7 @@ void Scene::setActiveScene (string scene) {
 }
 
 Scene::Scene (string name) : hasBeenActive(false), tickedActive(false), sceneManager("sceneManager",*this) {
+	if (scenes.find(name) != scenes.end()) delete scenes[name]; //delete old scene if duplicates
 	scenes[name] = this;
 	if (!activeScene) activeScene = this;
 }
@@ -121,6 +122,8 @@ UI::Image::Image (string name, UI &ui, float x, float y, float w, float h, unsig
 	setDimensions(dim.x,dim.y);
 
 	obj.draw = [&](){
+		if (imageID == 0) return;
+
 		//Apply Uniforms
 		glUseProgram(Image::shader->ID);
 

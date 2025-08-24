@@ -58,7 +58,9 @@ namespace {
 
 	atomic<bool> keysDownArr[GLFW_KEY_LAST + 1];
 	atomic<bool> keysPressArr[GLFW_KEY_LAST + 1];
-	atomic<bool> keysUpArr[GLFW_KEY_LAST + 1];
+	atomic<bool> mouseDownArr[GLFW_MOUSE_BUTTON_LAST + 1];
+	atomic<bool> mousePressArr[GLFW_MOUSE_BUTTON_LAST + 1];
+	atomic<double> mousePos[2];
 	void processInput () {
 		glfwPollEvents();
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
@@ -69,11 +71,14 @@ namespace {
 			for (int i = GLFW_KEY_SPACE; i <= GLFW_KEY_LAST; i++) {
 				keysPressArr[i].store(false);
 			}
+			for (int i = 0; i <= GLFW_MOUSE_BUTTON_LAST; i++) {
+				mousePressArr[i].store(false);
+			}
 		}
 		for (int i = GLFW_KEY_SPACE; i <= GLFW_KEY_LAST; i++) {
 			bool keyDownBefore = keysDownArr[i].load();
 			if (glfwGetKey(Render::window, i) == GLFW_PRESS) {
-				if (!keyDownBefore) {
+				if (!keyDownBefore) { //Key pressed this frame
 					keysPressArr[i].store(true);
 				}
 				keysDownArr[i].store(true);
@@ -82,6 +87,26 @@ namespace {
 					keysDownArr[i].store(false);
 			}
 		}
+		//Same for Mouse press
+		for (int i = 0; i <= GLFW_MOUSE_BUTTON_LAST; i++) {
+			bool mouseDownBefore = mouseDownArr[i].load();
+			if (glfwGetMouseButton(Render::window, i) == GLFW_PRESS) {
+				if (!mouseDownBefore) { //Mouse pressed this frame
+					mousePressArr[i].store(true);
+				}
+				mouseDownArr[i].store(true);
+			} else {
+				if (ticked)
+					mouseDownArr[i].store(false);
+			}
+		}
+
+		//Get Mouse position
+		double x;
+		double y;
+		glfwGetCursorPos(window, &x, &y);
+		mousePos[0].store(x);
+		mousePos[1].store(y);
 
 		scriptTicked.store(false);
 	};
@@ -207,7 +232,7 @@ namespace Render {
 
 			if (imageQueue.size() > 0) loadImageQueue();
 
-			glClearColor(0.0,0.0,0.0,1.0);
+			glClearColor(0.1,0.1,0.1,1.0);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			//update pending meshes
@@ -221,12 +246,14 @@ namespace Render {
 		glfwTerminate();
 	};
 
-	unsigned int* generateImageCache (string imageSrc) {
+	unsigned int* generateImageCache (string imageSrc, string name) {
 		unsigned int* ptr = new unsigned int(0);
-		imageCache[imageSrc] = ptr; //it shouldn't happen that the image has already been generated;
+		imageCache[name] = ptr; //it shouldn't happen that the image has already been generated;
 		imageQueue[imageSrc] = ptr;
 		return ptr;
 	}
+	unsigned int* generateImageCache (string imageSrc) {return generateImageCache(imageSrc,imageSrc);}
+
 
 	atomic<bool> scriptTicked{false};
 	bool isKeyDown (int GLFW_key) {
@@ -234,5 +261,14 @@ namespace Render {
 	}
 	bool isKeyPressed (int GLFW_key) {
 		return keysPressArr[GLFW_key].load();
+	}
+	bool isMouseBtnDown (int GLFW_key) {
+		return mouseDownArr[GLFW_key].load();
+	}
+	bool isMouseBtnPressed (int GLFW_key) {
+		return mousePressArr[GLFW_key].load();
+	}
+	glm::vec2 getMousePos () {
+		return glm::vec2(mousePos[0].load(), mousePos[1].load());
 	}
 }

@@ -168,13 +168,16 @@ namespace Render {
 
 	void declareShaders (); //Only function that should be messed with; used to create shaders bc all glfw stuff is done on the same thread
 
+	unsigned int* generateImageCache (std::string imageSrc, std::string name); //puts image into queue to be generated, returns to pointer to element in Render::imageCache; Value pointed to is initially 0 until ID is generated
 	unsigned int* generateImageCache (std::string imageSrc); //puts image into queue to be generated, returns to pointer to element in Render::imageCache; Value pointed to is initially 0 until ID is generated
-
 
 	//Inputs are included under render because they aren't thread safe
 	extern std::atomic<bool> scriptTicked; //Tells render to reset keystroke buffer
 	bool isKeyDown (int GLFW_key); //Is the GLFW_KEY_--- being held down
 	bool isKeyPressed (int GLFW_key); //Has the GLFW_KEY_--- been pressed in the last tick
+	bool isMouseBtnDown (int GLFW_MOUSE_BTN); //Is the GLFW_MOUSE_BUTTON_--- being held down
+	bool isMouseBtnPressed (int GLFW_MOUSE_BTN); //Has the GLFW_MOUSE_BUTTON_--- been pressed in the last tick
+	glm::vec2 getMousePos ();
 }
 
 #endif
