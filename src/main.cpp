@@ -13,7 +13,7 @@ thread* scriptThread = nullptr;
 int main () {
 	ChessBoard::Themes::Default board(600);
 	board.setCenter(glm::vec2(550,450));
-	board.displayText();
+	// board.displayText();
 
 
 	renderThread = new thread(Render::init,1100,900);

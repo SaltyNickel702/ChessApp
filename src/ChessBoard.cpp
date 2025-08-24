@@ -75,7 +75,7 @@ void Board::movePiece (int fx, int fy, int tx, int ty, bool swap) {
 	}
 }
 void Board::movePiece (int fx, int fy, int tx, int ty) {movePiece(fx,fy,tx,ty,false);}
-bool Board::makeMove (int fx, int fy, int tx, int ty, bool test) {
+bool Board::makeMove (int fx, int fy, int tx, int ty, int test) {
 	if (fx < 0 || fy < 0 || fx > 7 || fy > 7) return false; // out of bounds
 	if (tx < 0 || ty < 0 || tx > 7 || ty > 7) return false;
 
@@ -85,7 +85,7 @@ bool Board::makeMove (int fx, int fy, int tx, int ty, bool test) {
 	Piece* p2 = pieces[tx][ty];
 
 	if (p1->team == p2->team) return false; // same team
-	if (p1->team != turn) return false; // not the correct turn
+	if (test != 2 && p1->team != turn) return false; // not the correct turn
 
 	switch (p1->type) { // needs to pass individual tests | Pass means the switch is broken
 		case 1: { // Pawn
@@ -179,10 +179,52 @@ bool Board::makeMove (int fx, int fy, int tx, int ty, bool test) {
 	TestPassed:;
 
 
-	if (!test) Board::movePiece (fx, fy, tx, ty, false);
+	if (test != 2 && isCheck(fx, fy, tx, ty, p1->team)) return false;
+	if (test == 0) Board::movePiece (fx, fy, tx, ty, false);
 	return true;
 }
-bool Board::makeMove (int fx, int fy, int tx, int ty) {return Board::makeMove(fx,fy,tx,ty,false);}
+bool Board::makeMove (int fx, int fy, int tx, int ty) {return Board::makeMove(fx,fy,tx,ty,0);}
+bool Board::isCheck (int team) {
+	//find king
+	int kx,ky;
+	for (int x = 0; x < 8; x++) {
+		for (int y = 0; y < 8; y++) {
+			Piece* p = pieces[x][y];
+			if (p->type == 6 && p->team == team) {
+				kx = x;
+				ky = y;
+				goto kingFound;
+			}
+		}
+	}
+	kingFound:;
+
+	//Check if any piece can move to spot
+	for (int x = 0; x < 8; x++) {
+		for (int y = 0; y < 8; y++) {
+			Piece* p = pieces[x][y];
+			if (p->type == 0 || p->team == team) continue;
+			bool moveMade = makeMove(x,y,kx,ky,2);
+			if (moveMade) return true;
+		}
+	}
+	return false;
+}
+bool Board::isCheck (int fx, int fy, int tx, int ty, int team) {
+	//Edit Board
+	Piece* p1 = pieces[fx][fy];
+	Piece* p2 = pieces[tx][ty];
+	Piece placeholder(0);
+	pieces[tx][ty] = p1;
+	pieces[fx][fy] = &placeholder;
+
+	bool retVal = isCheck(team);
+
+	//Revert Changes to Board
+	pieces[fx][fy] = p1;
+	pieces[tx][ty] = p2;
+	return retVal;
+}
 void Board::displayText () {
 	cout << endl;
 	for (int y = 7; y >= 0; y--) {
@@ -290,7 +332,7 @@ Themes::Default::Default (float widthIn /* square, no reason for w + h */) : sce
 
 					if (moveSuccess) {
 						turn = !(bool)turn;
-						displayText();
+						// displayText();
 					}
 
 					makingMove = false;
@@ -321,7 +363,7 @@ Themes::Default::Default (float widthIn /* square, no reason for w + h */) : sce
 			glm::vec2 pos = getXY(id);
 			resetTileColor(pos.x,pos.y);
 
-			if (makingMove && makeMove(selectedPiece.x, selectedPiece.y, pos.x, pos.y, true)) {
+			if (makingMove && makeMove(selectedPiece.x, selectedPiece.y, pos.x, pos.y, 1)) {
 				b->color = (glm::vec4(1,0.8,0.8,1) + b->color) * 0.5f;
 			}
 		}

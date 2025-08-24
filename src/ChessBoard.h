@@ -28,8 +28,10 @@ namespace ChessBoard {
 
 			void movePiece (int fx, int fy, int tx, int ty, bool swap);
 			void movePiece (int fx, int fy, int tx, int ty);
-			bool makeMove (int fx, int fy, int tx, int ty, bool test);
+			bool makeMove (int fx, int fy, int tx, int ty, int testType); // testType 0: Move request | 1: See if available | 2: See if available ignoring check
 			bool makeMove (int fx, int fy, int tx, int ty);
+			bool isCheck (int fx, int fy, int tx, int ty, int team); // when moving fx fy to tx ty
+			bool isCheck (int team);
 
 			void displayText();
 
